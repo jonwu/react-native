@@ -1,13 +1,13 @@
 /**
- * Copyright (c) 2014-present, Facebook, Inc.
+ * Copyright (c) Facebook, Inc. and its affiliates.
  *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
+ * This source code is licensed under the MIT license found in the LICENSE
+ * file in the root directory of this source tree.
  */
-
 #pragma once
 #include "YGNode.h"
 #include "Yoga-internal.h"
+#include "CompactValue.h"
 
 // This struct is an helper model to hold the data for step 4 of flexbox
 // algo, which is collecting the flex items in a line.
@@ -40,12 +40,12 @@ struct YGCollectFlexItemsRowValues {
   float sizeConsumedOnCurrentLine;
   float totalFlexGrowFactors;
   float totalFlexShrinkScaledFactors;
-  float endOfLineIndex;
+  uint32_t endOfLineIndex;
   std::vector<YGNodeRef> relativeChildren;
   float remainingFreeSpace;
   // The size of the mainDim for the row after considering size, padding, margin
   // and border of flex items. This is used to calculate maxLineDim after going
-  // through all the rows to decide on the main axis size of parent.
+  // through all the rows to decide on the main axis size of owner.
   float mainDim;
   // The size of the crossDim for the row after considering size, padding,
   // margin and border of flex items. Used for calculating containers crossSize.
@@ -58,18 +58,12 @@ bool YGValueEqual(const YGValue a, const YGValue b);
 // difference between two floats is less than 0.0001f or both are undefined.
 bool YGFloatsEqual(const float a, const float b);
 
-// We need custom max function, since we want that, if one argument is
-// YGUndefined then the max funtion should return the other argument as the max
-// value. We wouldn't have needed a custom max function if YGUndefined was NAN
-// as fmax has the same behaviour, but with NAN we cannot use `-ffast-math`
-// compiler flag.
 float YGFloatMax(const float a, const float b);
 
-// We need custom min function, since we want that, if one argument is
-// YGUndefined then the min funtion should return the other argument as the min
-// value. We wouldn't have needed a custom min function if YGUndefined was NAN
-// as fmin has the same behaviour, but with NAN we cannot use `-ffast-math`
-// compiler flag.
+YGFloatOptional YGFloatOptionalMax(
+    const YGFloatOptional op1,
+    const YGFloatOptional op2);
+
 float YGFloatMin(const float a, const float b);
 
 // This custom float comparision function compares the array of float with
@@ -86,6 +80,9 @@ bool YGFloatArrayEqual(
   return areEqual;
 }
 
+// This function returns 0 if YGFloatIsUndefined(val) is true and val otherwise
+float YGFloatSanitize(const float val);
+
 YGFlexDirection YGFlexDirectionCross(
     const YGFlexDirection flexDirection,
     const YGDirection direction);
@@ -95,17 +92,17 @@ inline bool YGFlexDirectionIsRow(const YGFlexDirection flexDirection) {
       flexDirection == YGFlexDirectionRowReverse;
 }
 
-inline float YGResolveValue(const YGValue value, const float parentSize) {
+inline YGFloatOptional YGResolveValue(
+    const YGValue value,
+    const float ownerSize) {
   switch (value.unit) {
-    case YGUnitUndefined:
-    case YGUnitAuto:
-      return YGUndefined;
     case YGUnitPoint:
-      return value.value;
+      return YGFloatOptional{value.value};
     case YGUnitPercent:
-      return value.value * parentSize * 0.01;
+      return YGFloatOptional{value.value * ownerSize * 0.01f};
+    default:
+      return YGFloatOptional{};
   }
-  return YGUndefined;
 }
 
 inline bool YGFlexDirectionIsColumn(const YGFlexDirection flexDirection) {
@@ -127,8 +124,8 @@ inline YGFlexDirection YGResolveFlexDirection(
   return flexDirection;
 }
 
-static inline float YGResolveValueMargin(
-    const YGValue value,
-    const float parentSize) {
-  return value.unit == YGUnitAuto ? 0 : YGResolveValue(value, parentSize);
+inline YGFloatOptional YGResolveValueMargin(
+    yoga::detail::CompactValue value,
+    const float ownerSize) {
+  return value.isAuto() ? YGFloatOptional{0} : YGResolveValue(value, ownerSize);
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015-present, Facebook, Inc.
+ * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -9,65 +9,72 @@
 
 #import <React/UIView+React.h>
 
-@interface RCTInputAccessoryViewContent()
-
-// Overriding `inputAccessoryView` to `readwrite`.
-@property (nonatomic, readwrite, retain) UIView *inputAccessoryView;
-
-@end
-
 @implementation RCTInputAccessoryViewContent
-
-- (BOOL)canBecomeFirstResponder
 {
-  return true;
+  UIView *_safeAreaContainer;
+  NSLayoutConstraint *_heightConstraint;
 }
 
-- (BOOL)becomeFirstResponder
+- (instancetype)init
 {
-  const BOOL becameFirstResponder = [super becomeFirstResponder];
+  if (self = [super init]) {
+    _safeAreaContainer = [UIView new];
+    [self addSubview:_safeAreaContainer];
 
-  #if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && __IPHONE_OS_VERSION_MAX_ALLOWED >= 110000 /* __IPHONE_11_0 */
-  // Avoiding the home pill and notch (landscape mode) on iphoneX.
-  if (becameFirstResponder) {
+    // Use autolayout to position the view properly and take into account
+    // safe area insets on iPhone X.
+    // TODO: Support rotation, anchor to left and right without breaking frame x coordinate (T27974328).
+    self.autoresizingMask = UIViewAutoresizingFlexibleHeight;
+    _safeAreaContainer.translatesAutoresizingMaskIntoConstraints = NO;
+
+    _heightConstraint = [_safeAreaContainer.heightAnchor constraintEqualToConstant:0];
+    _heightConstraint.active = YES;
+
     if (@available(iOS 11.0, *)) {
-      [_contentView.bottomAnchor
-       constraintLessThanOrEqualToSystemSpacingBelowAnchor:_contentView.window.safeAreaLayoutGuide.bottomAnchor
-       multiplier:1.0f].active = YES;
-      [_contentView.leftAnchor
-       constraintLessThanOrEqualToSystemSpacingAfterAnchor:_contentView.window.safeAreaLayoutGuide.leftAnchor
-       multiplier:1.0f].active = YES;
-      [_contentView.rightAnchor
-       constraintLessThanOrEqualToSystemSpacingAfterAnchor:_contentView.window.safeAreaLayoutGuide.rightAnchor
-       multiplier:1.0f].active = YES;
+      [_safeAreaContainer.bottomAnchor constraintEqualToAnchor:self.safeAreaLayoutGuide.bottomAnchor].active = YES;
+      [_safeAreaContainer.topAnchor constraintEqualToAnchor:self.safeAreaLayoutGuide.topAnchor].active = YES;
+      [_safeAreaContainer.leadingAnchor constraintEqualToAnchor:self.safeAreaLayoutGuide.leadingAnchor].active = YES;
+      [_safeAreaContainer.trailingAnchor constraintEqualToAnchor:self.safeAreaLayoutGuide.trailingAnchor].active = YES;
+    } else {
+      [_safeAreaContainer.bottomAnchor constraintEqualToAnchor:self.bottomAnchor].active = YES;
+      [_safeAreaContainer.topAnchor constraintEqualToAnchor:self.topAnchor].active = YES;
+      [_safeAreaContainer.leadingAnchor constraintEqualToAnchor:self.leadingAnchor].active = YES;
+      [_safeAreaContainer.trailingAnchor constraintEqualToAnchor:self.trailingAnchor].active = YES;
     }
   }
-  #endif
-
-  return becameFirstResponder;
+  return self;
 }
 
-- (UIView *)inputAccessoryView
+- (CGSize)intrinsicContentSize
 {
-  if (!_inputAccessoryView) {
-    _inputAccessoryView = [UIView new];
-    _contentView = [UIView new];
-    [_inputAccessoryView addSubview:_contentView];
-  }
-  return _inputAccessoryView;
+  // This is needed so the view size is based on autolayout constraints.
+  return CGSizeZero;
+}
+
+- (void)reactSetFrame:(CGRect)frame
+{
+  // We still need to set the frame here, otherwise it won't be
+  // measured until moved to the window during the keyboard opening
+  // animation. If this happens, the height will be animated from 0 to
+  // its actual size and we don't want that.
+  [self setFrame:frame];
+  [_safeAreaContainer setFrame:frame];
+
+  _heightConstraint.constant = frame.size.height;
+  [self layoutIfNeeded];
 }
 
 - (void)insertReactSubview:(UIView *)subview atIndex:(NSInteger)index
 {
   [super insertReactSubview:subview atIndex:index];
-  [_contentView insertSubview:subview atIndex:index];
+  [_safeAreaContainer insertSubview:subview atIndex:index];
 }
 
 - (void)removeReactSubview:(UIView *)subview
 {
   [super removeReactSubview:subview];
   [subview removeFromSuperview];
-  if ([[_inputAccessoryView subviews] count] == 0 && [self isFirstResponder]) {
+  if ([[_safeAreaContainer subviews] count] == 0 && [self isFirstResponder]) {
     [self resignFirstResponder];
   }
 }

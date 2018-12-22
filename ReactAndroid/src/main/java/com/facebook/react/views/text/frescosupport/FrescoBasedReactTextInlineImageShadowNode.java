@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015-present, Facebook, Inc.
+ * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -41,27 +41,13 @@ public class FrescoBasedReactTextInlineImageShadowNode extends ReactTextInlineIm
   private final @Nullable Object mCallerContext;
   private float mWidth = YogaConstants.UNDEFINED;
   private float mHeight = YogaConstants.UNDEFINED;
+  private int mTintColor = 0;
 
   public FrescoBasedReactTextInlineImageShadowNode(
     AbstractDraweeControllerBuilder draweeControllerBuilder,
     @Nullable Object callerContext) {
     mDraweeControllerBuilder = draweeControllerBuilder;
     mCallerContext = callerContext;
-  }
-
-  private FrescoBasedReactTextInlineImageShadowNode(FrescoBasedReactTextInlineImageShadowNode node) {
-    super(node);
-    mHeaders = node.mHeaders; // mHeaders is immutable
-    mWidth = node.mWidth;
-    mHeight = node.mHeight;
-    mDraweeControllerBuilder = node.mDraweeControllerBuilder;
-    mCallerContext = node.mCallerContext;
-    mUri = node.mUri;
-  }
-
-  @Override
-  public FrescoBasedReactTextInlineImageShadowNode mutableCopy() {
-    return new FrescoBasedReactTextInlineImageShadowNode(this);
   }
 
   @ReactProp(name = "src")
@@ -94,6 +80,11 @@ public class FrescoBasedReactTextInlineImageShadowNode extends ReactTextInlineIm
     mHeaders = headers;
   }
 
+  @ReactProp(name = "tintColor")
+  public void setTintColor(int tintColor) {
+    mTintColor = tintColor;
+  }
+
   /**
    * Besides width/height, all other layout props on inline images are ignored
    */
@@ -116,7 +107,7 @@ public class FrescoBasedReactTextInlineImageShadowNode extends ReactTextInlineIm
           "Inline images must not have percentage based height");
     }
   }
-
+  
   public @Nullable Uri getUri() {
     return mUri;
   }
@@ -155,6 +146,7 @@ public class FrescoBasedReactTextInlineImageShadowNode extends ReactTextInlineIm
       resources,
       height,
       width,
+      mTintColor,
       getUri(),
       getHeaders(),
       getDraweeControllerBuilder(),

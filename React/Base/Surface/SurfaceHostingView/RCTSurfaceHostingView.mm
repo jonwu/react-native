@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015-present, Facebook, Inc.
+ * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -26,6 +26,13 @@
   RCTSurfaceStage _stage;
 }
 
++ (RCTSurface *)createSurfaceWithBridge:(RCTBridge *)bridge
+                             moduleName:(NSString *)moduleName
+                      initialProperties:(NSDictionary *)initialProperties
+{
+  return [[RCTSurface alloc] initWithBridge:bridge moduleName:moduleName initialProperties:initialProperties];
+}
+
 RCT_NOT_IMPLEMENTED(- (instancetype)init)
 RCT_NOT_IMPLEMENTED(- (instancetype)initWithFrame:(CGRect)frame)
 RCT_NOT_IMPLEMENTED(- (nullable instancetype)initWithCoder:(NSCoder *)coder)
@@ -33,20 +40,18 @@ RCT_NOT_IMPLEMENTED(- (nullable instancetype)initWithCoder:(NSCoder *)coder)
 - (instancetype)initWithBridge:(RCTBridge *)bridge
                     moduleName:(NSString *)moduleName
              initialProperties:(NSDictionary *)initialProperties
+               sizeMeasureMode:(RCTSurfaceSizeMeasureMode)sizeMeasureMode
 {
-  RCTSurface *surface = [self createSurfaceWithBridge:bridge moduleName:moduleName initialProperties:initialProperties];
-  return [self initWithSurface:surface];
-
+  RCTSurface *surface = [[self class] createSurfaceWithBridge:bridge moduleName:moduleName initialProperties:initialProperties];
+  [surface start];
+  return [self initWithSurface:surface sizeMeasureMode:sizeMeasureMode];
 }
 
-- (instancetype)initWithSurface:(RCTSurface *)surface
+- (instancetype)initWithSurface:(RCTSurface *)surface sizeMeasureMode:(RCTSurfaceSizeMeasureMode)sizeMeasureMode
 {
   if (self = [super initWithFrame:CGRectZero]) {
     _surface = surface;
-
-    _sizeMeasureMode =
-      RCTSurfaceSizeMeasureModeWidthAtMost |
-      RCTSurfaceSizeMeasureModeHeightAtMost;
+    _sizeMeasureMode = sizeMeasureMode;
 
     _surface.delegate = self;
     _stage = surface.stage;
@@ -56,11 +61,9 @@ RCT_NOT_IMPLEMENTED(- (nullable instancetype)initWithCoder:(NSCoder *)coder)
   return self;
 }
 
-- (RCTSurface *)createSurfaceWithBridge:(RCTBridge *)bridge
-                             moduleName:(NSString *)moduleName
-                      initialProperties:(NSDictionary *)initialProperties
+- (void)dealloc
 {
-  return [[RCTSurface alloc] initWithBridge:bridge moduleName:moduleName initialProperties:initialProperties];
+  [_surface stop];
 }
 
 - (void)setFrame:(CGRect)frame

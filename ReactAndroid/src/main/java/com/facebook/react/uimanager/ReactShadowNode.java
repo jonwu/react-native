@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015-present, Facebook, Inc.
+ * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -18,6 +18,7 @@ import com.facebook.yoga.YogaOverflow;
 import com.facebook.yoga.YogaPositionType;
 import com.facebook.yoga.YogaValue;
 import com.facebook.yoga.YogaWrap;
+import java.util.List;
 import javax.annotation.Nullable;
 
 /**
@@ -67,17 +68,6 @@ public interface ReactShadowNode<T extends ReactShadowNode> {
    */
   boolean isYogaLeafNode();
 
-  /**
-   * @return a mutable copy of the {@link ReactShadowNode}
-   */
-  T mutableCopy();
-
-  T mutableCopyWithNewProps(@Nullable ReactStylesDiffMap newProps);
-
-  T mutableCopyWithNewChildren();
-
-  T mutableCopyWithNewChildrenAndProps(@Nullable ReactStylesDiffMap newProps);
-
   String getViewClass();
 
   boolean hasUpdates();
@@ -103,8 +93,6 @@ public interface ReactShadowNode<T extends ReactShadowNode> {
   int indexOf(T child);
 
   void removeAndDisposeAllChildren();
-
-  @Nullable ReactStylesDiffMap getNewProps();
 
   /**
    * This method will be called by {@link UIManagerModule} once per batch, before calculating
@@ -138,9 +126,9 @@ public interface ReactShadowNode<T extends ReactShadowNode> {
 
   void setReactTag(int reactTag);
 
-  T getRootNode();
+  int getRootTag();
 
-  void setRootNode(T rootNode);
+  void setRootTag(int rootTag);
 
   void setViewClassName(String viewClassName);
 

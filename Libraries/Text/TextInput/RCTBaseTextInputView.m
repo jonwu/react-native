@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015-present, Facebook, Inc.
+ * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -189,6 +189,34 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithFrame:(CGRect)frame)
   }
 }
 
+- (void)setTextContentType:(NSString *)type
+{
+  #if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_10_0
+    if (@available(iOS 10.0, *)) {
+        // Setting textContentType to an empty string will disable any
+        // default behaviour, like the autofill bar for password inputs
+        self.backedTextInputView.textContentType = [type isEqualToString:@"none"] ? @"" : type;
+    }
+  #endif
+}
+
+- (UIKeyboardType)keyboardType
+{
+  return self.backedTextInputView.keyboardType;
+}
+
+- (void)setKeyboardType:(UIKeyboardType)keyboardType
+{
+  UIView<RCTBackedTextInputViewProtocol> *textInputView = self.backedTextInputView;
+  if (textInputView.keyboardType != keyboardType) {
+    textInputView.keyboardType = keyboardType;
+    // Without the call to reloadInputViews, the keyboard will not change until the textview field (the first responder) loses and regains focus.
+    if (textInputView.isFirstResponder) {
+      [textInputView reloadInputViews];
+    }
+  }
+}
+
 #pragma mark - RCTBackedTextInputDelegate
 
 - (BOOL)textInputShouldBeginEditing
@@ -300,15 +328,10 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithFrame:(CGRect)frame)
 
   NSString *previousText = [_predictedText substringWithRange:range] ?: @"";
 
-  // After clearing the text by replacing it with an empty string, `_predictedText`
-  // still preserves the deleted text.
-  // As the first character in the TextInput always comes with the range value (0, 0),
-  // we should check the range value in order to avoid appending a character to the deleted string
-  // (which caused the issue #18374)
-  if (!NSEqualRanges(range, NSMakeRange(0, 0)) && _predictedText) {
-    _predictedText = [_predictedText stringByReplacingCharactersInRange:range withString:text];
-  } else {
+  if (!_predictedText || backedTextInputView.attributedText.string.length == 0) {
     _predictedText = text;
+  } else {
+    _predictedText = [_predictedText stringByReplacingCharactersInRange:range withString:text];
   }
 
   if (_onTextInput) {
@@ -456,7 +479,7 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithFrame:(CGRect)frame)
       UIView *accessoryView = [strongSelf->_bridge.uiManager viewForNativeID:nativeID
                                                                  withRootTag:rootView.reactTag];
       if (accessoryView && [accessoryView isKindOfClass:[RCTInputAccessoryView class]]) {
-        strongSelf.backedTextInputView.inputAccessoryView = ((RCTInputAccessoryView *)accessoryView).content.inputAccessoryView;
+        strongSelf.backedTextInputView.inputAccessoryView = ((RCTInputAccessoryView *)accessoryView).inputAccessoryView;
         [strongSelf reloadInputViewsIfNecessary];
       }
     }

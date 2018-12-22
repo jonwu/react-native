@@ -1,28 +1,26 @@
 /**
- * Copyright (c) 2015-present, Facebook, Inc.
+ * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
+ * @format
  * @flow
- * @providesModule DatePickerIOSExample
  */
+
 'use strict';
 
-var React = require('react');
-var ReactNative = require('react-native');
-var {
-  DatePickerIOS,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} = ReactNative;
+const React = require('react');
+const ReactNative = require('react-native');
+const {DatePickerIOS, StyleSheet, Text, TextInput, View} = ReactNative;
 
-class DatePickerExample extends React.Component<$FlowFixMeProps, $FlowFixMeState> {
+class DatePickerExample extends React.Component<
+  $FlowFixMeProps,
+  $FlowFixMeState,
+> {
   static defaultProps = {
     date: new Date(),
-    timeZoneOffsetInHours: (-1) * (new Date()).getTimezoneOffset() / 60,
+    timeZoneOffsetInHours: (-1 * new Date().getTimezoneOffset()) / 60,
   };
 
   state = {
@@ -30,12 +28,12 @@ class DatePickerExample extends React.Component<$FlowFixMeProps, $FlowFixMeState
     timeZoneOffsetInHours: this.props.timeZoneOffsetInHours,
   };
 
-  onDateChange = (date) => {
+  onDateChange = date => {
     this.setState({date: date});
   };
 
-  onTimezoneChange = (event) => {
-    var offset = parseInt(event.nativeEvent.text, 10);
+  onTimezoneChange = event => {
+    const offset = parseInt(event.nativeEvent.text, 10);
     if (isNaN(offset)) {
       return;
     }
@@ -48,11 +46,14 @@ class DatePickerExample extends React.Component<$FlowFixMeProps, $FlowFixMeState
     return (
       <View>
         <WithLabel label="Value:">
-          <Text>{
-            this.state.date.toLocaleDateString() +
-            ' ' +
-            this.state.date.toLocaleTimeString()
-          }</Text>
+          <Text testID="date-and-time-indicator">
+            {this.state.date.toLocaleDateString() +
+              ' ' +
+              this.state.date.toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit',
+              })}
+          </Text>
         </WithLabel>
         <WithLabel label="Timezone:">
           <TextInput
@@ -64,6 +65,7 @@ class DatePickerExample extends React.Component<$FlowFixMeProps, $FlowFixMeState
         </WithLabel>
         <Heading label="Date + time picker" />
         <DatePickerIOS
+          testID="date-and-time"
           date={this.state.date}
           mode="datetime"
           timeZoneOffsetInMinutes={this.state.timeZoneOffsetInHours * 60}
@@ -71,6 +73,7 @@ class DatePickerExample extends React.Component<$FlowFixMeProps, $FlowFixMeState
         />
         <Heading label="Date picker" />
         <DatePickerIOS
+          testID="date-only"
           date={this.state.date}
           mode="date"
           timeZoneOffsetInMinutes={this.state.timeZoneOffsetInHours * 60}
@@ -78,6 +81,7 @@ class DatePickerExample extends React.Component<$FlowFixMeProps, $FlowFixMeState
         />
         <Heading label="Time picker, 10-minute interval" />
         <DatePickerIOS
+          testID="time-only"
           date={this.state.date}
           mode="time"
           timeZoneOffsetInMinutes={this.state.timeZoneOffsetInHours * 60}
@@ -94,9 +98,7 @@ class WithLabel extends React.Component<$FlowFixMeProps> {
     return (
       <View style={styles.labelContainer}>
         <View style={styles.labelView}>
-          <Text style={styles.label}>
-            {this.props.label}
-          </Text>
+          <Text style={styles.label}>{this.props.label}</Text>
         </View>
         {this.props.children}
       </View>
@@ -108,9 +110,7 @@ class Heading extends React.Component<$FlowFixMeProps> {
   render() {
     return (
       <View style={styles.headingContainer}>
-        <Text style={styles.heading}>
-          {this.props.label}
-        </Text>
+        <Text style={styles.heading}>{this.props.label}</Text>
       </View>
     );
   }
@@ -120,14 +120,15 @@ exports.displayName = (undefined: ?string);
 exports.title = '<DatePickerIOS>';
 exports.description = 'Select dates and times using the native UIDatePicker.';
 exports.examples = [
-{
-  title: '<DatePickerIOS>',
-  render: function(): React.Element<any> {
-    return <DatePickerExample />;
+  {
+    title: '<DatePickerIOS>',
+    render: function(): React.Element<any> {
+      return <DatePickerExample />;
+    },
   },
-}];
+];
 
-var styles = StyleSheet.create({
+const styles = StyleSheet.create({
   textinput: {
     height: 26,
     width: 50,

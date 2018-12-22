@@ -1,3 +1,10 @@
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
 package com.facebook.react.modules.fabric;
 
 import com.facebook.react.bridge.JavaScriptModule;
@@ -13,6 +20,6 @@ public interface ReactFabric extends JavaScriptModule {
    * JS method used to unmount Fabric surfaces.
    * @param rootTag {@link int} react tag of Root {@link com.facebook.react.uimanager.ReactShadowNode}
    */
-  void unmountComponentAtNodeAndRemoveContainer(int rootTag);
+  void unmountComponentAtNode(int rootTag);
 
 }

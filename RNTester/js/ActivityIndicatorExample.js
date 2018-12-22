@@ -1,26 +1,33 @@
 /**
- * Copyright (c) 2015-present, Facebook, Inc.
+ * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @flow
- * @providesModule ActivityIndicatorExample
+ * @format
+ * @flow strict-local
  */
+
 'use strict';
 
-import React, { Component } from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import React, {Component} from 'react';
+import {ActivityIndicator, StyleSheet, View} from 'react-native';
 
 /**
  * Optional Flowtype state and timer types definition
  */
-type State = { animating: boolean; };
+type State = {animating: boolean};
 type Timer = number;
 
-class ToggleAnimatingActivityIndicator extends Component<$FlowFixMeProps, State> {
+class ToggleAnimatingActivityIndicator extends Component<
+  $FlowFixMeProps,
+  State,
+> {
   _timer: Timer;
 
+  /* $FlowFixMe(>=0.85.0 site=react_native_fb) This comment suppresses an error
+   * found when Flow v0.85 was deployed. To see the error, delete this comment
+   * and run Flow. */
   constructor(props) {
     super(props);
     this.state = {
@@ -60,8 +67,6 @@ class ToggleAnimatingActivityIndicator extends Component<$FlowFixMeProps, State>
   }
 }
 
-
-
 exports.displayName = (undefined: ?string);
 exports.framework = 'React';
 exports.title = '<ActivityIndicator>';
@@ -77,22 +82,18 @@ exports.examples = [
           color="white"
         />
       );
-    }
+    },
   },
   {
     title: 'Gray',
     render() {
       return (
         <View>
-          <ActivityIndicator
-            style={[styles.centering]}
-          />
-          <ActivityIndicator
-            style={[styles.centering, {backgroundColor: '#eeeeee'}]}
-          />
+          <ActivityIndicator style={[styles.centering]} />
+          <ActivityIndicator style={[styles.centering, styles.gray]} />
         </View>
       );
-    }
+    },
   },
   {
     title: 'Custom colors',
@@ -105,7 +106,7 @@ exports.examples = [
           <ActivityIndicator color="#00aa00" />
         </View>
       );
-    }
+    },
   },
   {
     title: 'Large',
@@ -117,38 +118,26 @@ exports.examples = [
           color="white"
         />
       );
-    }
+    },
   },
   {
     title: 'Large, custom colors',
     render() {
       return (
         <View style={styles.horizontal}>
-          <ActivityIndicator
-            size="large"
-            color="#0000ff"
-          />
-          <ActivityIndicator
-            size="large"
-            color="#aa00aa"
-          />
-          <ActivityIndicator
-            size="large"
-            color="#aa3300"
-          />
-          <ActivityIndicator
-            size="large"
-            color="#00aa00"
-          />
+          <ActivityIndicator size="large" color="#0000ff" />
+          <ActivityIndicator size="large" color="#aa00aa" />
+          <ActivityIndicator size="large" color="#aa3300" />
+          <ActivityIndicator size="large" color="#00aa00" />
         </View>
       );
-    }
+    },
   },
   {
     title: 'Start/stop',
     render() {
       return <ToggleAnimatingActivityIndicator />;
-    }
+    },
   },
   {
     title: 'Custom size',
@@ -159,22 +148,16 @@ exports.examples = [
           size="large"
         />
       );
-    }
+    },
   },
   {
     platform: 'android',
     title: 'Custom size (size: 75)',
     render() {
-      return (
-        <ActivityIndicator
-          style={styles.centering}
-          size={75}
-        />
-      );
-    }
+      return <ActivityIndicator style={styles.centering} size={75} />;
+    },
   },
 ];
-
 
 const styles = StyleSheet.create({
   centering: {
